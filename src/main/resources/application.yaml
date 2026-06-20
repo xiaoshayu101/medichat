@@ -1,0 +1,53 @@
+#  Spring 环境配置 (spring)
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: medichat-notify-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.example.medichat.dto"
+  cloud:
+    compatibility-verifier:
+      enabled: false
+  application:
+    name: medichat
+  redis:
+    host: 127.0.0.1
+    port: 6379
+#    配置了你的应用如何连接到 Redis 数据库
+  datasource:
+    url: jdbc:mysql://localhost:3306/medichat?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:请替换为真实密码}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#  连接Java和MySQL
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 数据库下划线字段自动映射成驼峰
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印SQL日志，方便调试
+#  服务器配置 (server)
+server:
+  port: 8080
+  #  这行代码指定了你的 Web 应用程序启动后监听的端口号是8080
+
+xxl:
+  job:
+    admin:
+      addresses: http://127.0.0.1:8088/
+    accessToken: ${XXL_JOB_ACCESS_TOKEN:请替换为XXL-Job访问令牌}
+    executor:
+      appname: medichat-executor
+      port: 9999
+      logpath: /Users/Zhuanz/Downloads/medichat/logs/xxljob
+dashscope:
+  api-key: ${DASHSCOPE_API_KEY:请替换为真实Key}
+  model: qwen-plus
+elasticsearch:
+  host: localhost
+  port: 9200
+  index-name: medical-summaries
