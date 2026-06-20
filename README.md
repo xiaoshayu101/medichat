@@ -13,12 +13,12 @@
 | 核心框架 | Spring Boot 3.3.4 · MyBatis-Plus |
 | 数据存储 | MySQL · Redis · Elasticsearch |
 | 消息队列 | Kafka |
-| AI 框架 | LangChain4j · 通义千问（阿里云百炼） |
+| AI 框架 | LangChain4j |
 | 定时调度 | XXL-Job · Spring Task |
 | 限流熔断 | Sentinel |
 | 实时通信 | Spring WebSocket |
 | 认证鉴权 | Sa-Token |
-| 搜索引擎 | Elasticsearch（全文检索 + 向量检索双用途） |
+| 搜索引擎 | Elasticsearch（全文检索 + 向量检索） |
 
 ## 团队分工
 
@@ -171,4 +171,4 @@ xxl:
 
 ## 项目说明
 
-本项目为学习/参赛性质，未上线（医疗系统涉及等保认证、数据合规，学生团队无法完成完整备案流程）。敏感配置已脱敏，请参考上方说明自行替换。
+本项目为参赛性质，未上线（因为医疗系统涉及等保认证，我们学生团队无法完成完整备案流程）。敏感配置已脱敏，请参考上方说明自行替换。
