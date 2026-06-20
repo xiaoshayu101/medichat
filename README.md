@@ -40,7 +40,7 @@
 - schedule_rule：医生的长期出诊规则（按周/双周配置，支持指定星期和时段）
 - schedule_exception：临时调班记录，支持 CANCEL（整天取消）、HALF_DAY（改成半天）、ADD_SLOT（加号）三种类型，覆盖基础规则
 
-XXL-Job 每日凌晨 01:00 读取规则与例外合并计算，预生成未来 7 天号源写入 MySQL，同步至 Redis。
+XXL-Job 每日凌晨 01:00 读取规则与例外合并计算，预生成未来 7 天号源写入 MySQL，同步至 Redis
 
 ### 核心设计亮点
 
