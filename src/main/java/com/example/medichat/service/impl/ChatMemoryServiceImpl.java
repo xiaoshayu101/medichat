@@ -4,6 +4,7 @@ import com.example.medichat.service.ChatMemoryService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatModel;
+//import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @Service
 public class ChatMemoryServiceImpl implements ChatMemoryService {
@@ -21,6 +25,9 @@ public class ChatMemoryServiceImpl implements ChatMemoryService {
 
     @Autowired
     private ChatModel chatModel;
+
+    private static final Logger log = LoggerFactory.getLogger(ChatMemoryServiceImpl.class);
+
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -65,7 +72,7 @@ public class ChatMemoryServiceImpl implements ChatMemoryService {
             }
             return messages;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("获取聊天记录失败", e);
             return new ArrayList<>();
         }
     }

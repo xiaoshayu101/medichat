@@ -7,6 +7,8 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.example.medichat.service.EsVectorService;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class EsVectorServiceImpl implements EsVectorService {
 
     @Autowired
     private EmbeddingModel embeddingModel;
+
+    private static final Logger log = LoggerFactory.getLogger(EsVectorServiceImpl.class);
 
     @Value("${elasticsearch.index-name}")
     private String indexName;
@@ -50,7 +54,7 @@ public class EsVectorServiceImpl implements EsVectorService {
 
             return response.id();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("保存向量数据失败, patientId: {}, summaryId: {}", patientId, summaryId, e);
             return null;
         }
     }
@@ -90,7 +94,7 @@ public class EsVectorServiceImpl implements EsVectorService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("查询相似向量失败, patientId: {}, queryText: {}", patientId, queryText, e);
         }
         return results;
     }

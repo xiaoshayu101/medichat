@@ -58,7 +58,7 @@ public class ElasticsearchConfig {
 
 //    /**
 //     * ES 向量存储
-//     * LangChain4j 帮我们封装了"存向量"和"检索向量"的操作
+//     * LangChain4j 封装的 Elasticsearch 向量存储组件
 //     */
 //    @Bean
 //    public ElasticsearchEmbeddingStore embeddingStore(ElasticsearchClient client) {
