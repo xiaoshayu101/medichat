@@ -19,7 +19,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-#    配置了你的应用如何连接到 Redis 数据库
+#  连接 Redis 数据库
   datasource:
     url: jdbc:mysql://localhost:3306/medichat?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
@@ -28,12 +28,12 @@ spring:
 #  连接Java和MySQL
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: true # 数据库下划线字段自动映射成驼峰
+    map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印SQL日志，方便调试
-#  服务器配置 (server)
+
+#  服务器配置
 server:
   port: 8080
-  #  这行代码指定了你的 Web 应用程序启动后监听的端口号是8080
 
 xxl:
   job:
