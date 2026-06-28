@@ -11,12 +11,14 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class AiConsultServiceImpl implements AiConsultService {
 
@@ -137,7 +139,7 @@ public class AiConsultServiceImpl implements AiConsultService {
                 patientSummaryMapper.selectPatientsWithTooManySummaries();
 
         if (patients.isEmpty()) {
-            System.out.println("没有需要二次压缩的患者");
+            log.info("没有需要二次压缩的患者");
             return;
         }
 
@@ -183,7 +185,6 @@ public class AiConsultServiceImpl implements AiConsultService {
             );
 
             // 同时删掉ES里这个患者的所有旧向量
-            // 这里用简单处理：通过之前存的esDocId逐条删除
             for (PatientSummary s : summaries) {
                 if (s.getEsDocId() != null) {
                     try {
@@ -192,7 +193,7 @@ public class AiConsultServiceImpl implements AiConsultService {
                                 .id(s.getEsDocId())
                         );
                     } catch (Exception e) {
-                        System.out.println("删除ES文档失败，esDocId=" + s.getEsDocId());
+                        log.error("删除ES文档失败，esDocId={}", s.getEsDocId(), e);
                     }
                 }
             }
@@ -211,10 +212,41 @@ public class AiConsultServiceImpl implements AiConsultService {
             healthProfileSummary.setEsDocId(esDocId);
             patientSummaryMapper.updateById(healthProfileSummary);
 
-            System.out.println("患者 " + patientId + " 的健康画像压缩完成");
+            log.info("患者 {} 的健康画像压缩完成", patientId);
+
 
         } catch (Exception e) {
-            System.out.println("患者 " + patientId + " 压缩失败：" + e.getMessage());
+            log.error("患者 {} 压缩失败: ", patientId, e);
         }
     }
+    /**
+     * 生成预问诊摘要（不存储）
+     */
+    @Override
+    public String generatePreConsultationSummary(Long patientId, String sessionId) {
+        try {
+            // 从Redis取出短期记忆
+            List<Map<String, String>> shortTermMemory =
+                    chatMemoryService.getMessages(patientId, sessionId);
+
+            // 拼接对话文本
+            StringBuilder dialogText = new StringBuilder();
+            for (Map<String, String> msg : shortTermMemory) {
+                String role = "user".equals(msg.get("role")) ? "患者" : "AI";
+                dialogText.append(role).append("：")
+                        .append(msg.get("content")).append("\n");
+            }
+
+            // 生成摘要
+            String summaryPrompt = "请根据以下问诊对话，生成一份结构化的病情摘要，" +
+                    "格式为：【主诉】【症状】【持续时间】【既往史】【用药过敏史】，" +
+                    "每项内容简洁精准，总字数不超过200字。\n\n" + dialogText;
+
+            return chatModel.chat(summaryPrompt);
+        } catch (Exception e) {
+            log.error("生成预问诊摘要失败, patientId={}, sessionId={}, 原因: ", patientId, sessionId, e);
+            return null;
+        }
+    }
+
 }

@@ -16,13 +16,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
+@Slf4j
 @Service
 public class ScheduleSlotServiceImpl implements ScheduleSlotService {
     @Autowired
@@ -188,14 +192,13 @@ public class ScheduleSlotServiceImpl implements ScheduleSlotService {
         }else {
 //            已存在，需要判断 totalCount 是否需要调整
             if (existing.getTotalCount() != totalCount){
-//                说明出现了新的例外（比如加号），total发生了变化
+//            说明出现了新的例外（比如加号），total发生了变化
                 int diff = totalCount - existing.getTotalCount();
                 existing.setTotalCount(totalCount);
                 existing.setRemainCount(existing.getRemainCount()+diff);
                 scheduleSlotMapper.updateById(existing);
             }
         }
-//
     }
 
     private ScheduleException findByType(List<ScheduleException> exceptions, String type) {
@@ -229,7 +232,8 @@ public class ScheduleSlotServiceImpl implements ScheduleSlotService {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();//把错误信息打印到控制台日志里，方便后续排查"是哪个医生哪条规则的数据出了问题"。
+            log.error("星期匹配处理失败, weekdayJson={}, targetweekday={}",
+                    weekdayJson, targetweekday, e);
         }
         return false;
     }

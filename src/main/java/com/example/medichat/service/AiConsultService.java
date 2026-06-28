@@ -21,4 +21,6 @@ public interface AiConsultService {
      * 由XXL-Job每周触发
      */
     void compressLongTermMemory();
+
+    String generatePreConsultationSummary(Long patientId, String sessionId);
 }

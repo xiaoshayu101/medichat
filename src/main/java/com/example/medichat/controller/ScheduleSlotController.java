@@ -22,7 +22,7 @@ public class ScheduleSlotController {
      * @param count    申请加的数量
      */
     @PostMapping("/addSlot")
-    @SentinelResource(value = "schedule.addSlot",blockHandler = "addSlotBlock")//当该方法触发了限流（比如并发量过大）或熔断时，程序不会直接抛出异常导致系统崩溃，而是会跳转到当前类中名为 addSlotBlock 的方法去执行。
+    @SentinelResource(value = "schedule.addSlot",blockHandler = "addSlotBlock")
     public String addSlot(@RequestParam Long doctorId,
                           @RequestParam String date,
                           @RequestParam String period,
@@ -35,9 +35,5 @@ public class ScheduleSlotController {
                                Integer count, BlockException e) {
         return "操作频繁，请稍后重试";
     }
-//有了Sentinel注解后：
-//正常情况：方法正常执行，加号逻辑运行。
-//高并发情况：Sentinel 拦截到请求超过阈值，直接调用 addSlotBlock 方法，返回给前端一个“系统繁忙，请稍后再试”的提示，从而保护了核心系统的稳定性。
-
 }
 

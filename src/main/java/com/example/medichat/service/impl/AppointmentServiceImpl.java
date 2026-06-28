@@ -10,6 +10,7 @@ import com.example.medichat.mapper.PatientSummaryMapper;
 import com.example.medichat.service.AiConsultService;
 import com.example.medichat.service.AppointmentService;
 import com.example.medichat.websocket.QueueWebSocketServer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -21,7 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-
+@Slf4j
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
     @Autowired
@@ -106,35 +107,26 @@ public class AppointmentServiceImpl implements AppointmentService {
         try {
             // sessionId用appointmentId，跟预问诊时保持一致
             String sessionId = String.valueOf(appointmentId);
-
             // 从短期记忆生成结构化摘要
-            aiConsultService.finishConsult(appointment.getPatientId(), sessionId);
+            String summaryContent = aiConsultService.generatePreConsultationSummary(appointment.getPatientId(), sessionId);
 
-            // 查出刚生成的摘要（最新一条）
-            PatientSummary latestSummary = patientSummaryMapper.selectOne(
-                    new QueryWrapper<PatientSummary>()
-                            .eq("patient_id", appointment.getPatientId())
-                            .orderByDesc("create_time")
-                            .last("LIMIT 1")
-            );
-
-            if (latestSummary != null) {
+            if (summaryContent != null) {
                 String doctorMessage = String.format(
                         "{\"type\":\"PATIENT_SUMMARY\",\"appointmentId\":%d,\"patientId\":%d,\"summary\":\"%s\"}",
                         appointmentId,
                         appointment.getPatientId(),
-                        latestSummary.getSummary().replace("\"", "\\\"").replace("\n", "\\n")
+                        summaryContent.replace("\"", "\\\"").replace("\n", "\\n")
                 );
                 // 推送给医生端（医生工作台也通过WebSocket连接，role=doctor，id=doctorId）
                 QueueWebSocketServer.sendToDoctor(String.valueOf(doctorId), doctorMessage);
             }
         } catch (Exception e) {
             // 摘要推送失败不影响叫号主流程
-            System.out.println("摘要推送失败，appointmentId=" + appointmentId + "，原因：" + e.getMessage());
+                log.error("推送预问诊摘要失败, appointmentId={}, 原因: ", appointmentId, e);
         }
 
 
-        // 5.：推送给患者本人，判断是否在线
+        // 5.推送给患者本人，判断是否在线
         String patientMessage = String.format(
                 "{\"type\":\"YOUR_TURN\",\"message\":\"请前往诊室就诊\"}"
         );
@@ -181,7 +173,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Scheduled(fixedRate = 120000) // 每120000毫秒=2分钟执行一次
     public void pushWaitingEstimate() {
         // 1.找出所有"今天有候诊患者"的医生+时段组合
-        // 这里简化处理：直接查所有今天status=CHECKED_IN的记录，按医生+时段分组
         LocalDate today = LocalDate.now();
         List<Appointment> waitingList = appointmentMapper.selectList(
                 new QueryWrapper<Appointment>()
@@ -240,6 +231,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             boolean sent = QueueWebSocketServer.sendToPatient(String.valueOf(patient.getId()), message);
             System.out.println("推送候诊患者id=" + patient.getId() + "，推送结果：" + sent + "，消息内容：" + message);
         }
+
     }
 
 
