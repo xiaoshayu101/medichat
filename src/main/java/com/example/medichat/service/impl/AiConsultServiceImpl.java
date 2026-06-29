@@ -242,11 +242,21 @@ public class AiConsultServiceImpl implements AiConsultService {
                     "格式为：【主诉】【症状】【持续时间】【既往史】【用药过敏史】，" +
                     "每项内容简洁精准，总字数不超过200字。\n\n" + dialogText;
 
-            return chatModel.chat(summaryPrompt);
+            String summaryContent = chatModel.chat(summaryPrompt);
+            // 将预问诊摘要存入MySQL，供医生端拉取兜底
+            if (summaryContent != null) {
+                PatientSummary patientSummary = new PatientSummary();
+                patientSummary.setPatientId(patientId);
+                patientSummary.setSummary(summaryContent);
+                patientSummaryMapper.insert(patientSummary);
+            }
+            return summaryContent;
+
         } catch (Exception e) {
             log.error("生成预问诊摘要失败, patientId={}, sessionId={}, 原因: ", patientId, sessionId, e);
             return null;
         }
+
     }
 
 }
